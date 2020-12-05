@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+	"reflect"
 	"strings"
 	"testing"
 )
@@ -65,6 +67,17 @@ func TestGetHighestSeatID(t *testing.T) {
 	want := 820
 
 	assertInt(t, got, want)
+}
+
+func TestGetSeatIDList(t *testing.T) {
+	seatList := "FBFBBFFRLR\nBFFFBBFRRR\nBBFFBBFRLL\nFFFBBBFRRR"
+
+	got := getSeatIDList(strings.NewReader(seatList))
+	want := []int{357, 567, 820, 119}
+
+	if !reflect.DeepEqual(got, want) {
+		fmt.Printf("Incorrect int list: got %v, want %v", got, want)
+	}
 }
 
 func assertInt(t *testing.T, got, want int) {

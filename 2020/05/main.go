@@ -6,6 +6,7 @@ import (
 	"io"
 	"math"
 	"os"
+	"sort"
 )
 
 var (
@@ -25,6 +26,16 @@ func main() {
 
 	highestID := getHighestSeatID(file)
 	fmt.Printf("The highest seat ID is %d\n", highestID)
+
+	// Can't read twice from the same reader, could use TeeReader
+	file, err = os.Open("data")
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
+
+	mySeatID := getMySeat(file)
+	fmt.Printf("My seat ID is %d\n", mySeatID)
 }
 
 func extractRowAndColStrings(seatCode string) (row, col string) {
@@ -75,6 +86,32 @@ func getHighestSeatID(seatList io.Reader) (maxID int) {
 		if id > maxID {
 			maxID = id
 		}
+	}
+
+	return
+}
+
+func getMySeat(seatList io.Reader) int {
+	seatIDList := getSeatIDList(seatList)
+	sort.Ints(seatIDList)
+
+	numberOfID := len(seatIDList)
+
+	for i := 0; i < numberOfID; i++ {
+		if seatIDList[i+1]-seatIDList[i] == 2 {
+			return seatIDList[i] + 1
+		}
+	}
+
+	return 0
+}
+
+func getSeatIDList(seatList io.Reader) (seatIDList []int) {
+	scanner := bufio.NewScanner(seatList)
+
+	for scanner.Scan() {
+		id := getSeatID(scanner.Text())
+		seatIDList = append(seatIDList, id)
 	}
 
 	return
