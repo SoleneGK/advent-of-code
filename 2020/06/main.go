@@ -14,14 +14,20 @@ func main() {
 	}
 	defer file.Close()
 
-	answersLists := getAllAnswerLists(file)
-	total := 0
+	answerListPart1, answerListPart2 := getAllAnswerLists(file)
+	totalPart1 := 0
+	totalPart2 := 0
 
-	for _, list := range answersLists {
-		total += list.GetNumberOfYesAnswers()
+	for _, list := range answerListPart1 {
+		totalPart1 += list.GetNumberOfYesAnswers()
 	}
 
-	fmt.Printf("The sum of counts is %d\n", total)
+	for _, list := range answerListPart2 {
+		totalPart2 += list.GetNumberOfYesAnswers()
+	}
+
+	fmt.Printf("The sum of counts for part 1 is %d\n", totalPart1)
+	fmt.Printf("The sum of counts for part 2 is %d\n", totalPart2)
 
 }
 
@@ -39,9 +45,7 @@ func (a *AnswerList) GetNumberOfYesAnswers() (number int) {
 	return
 }
 
-// refaire
-func getAllAnswerLists(input io.Reader) []AnswerList {
-	allAnswerLists := []AnswerList{}
+func getAllAnswerLists(input io.Reader) (answersPart1, answersPart2 []AnswerList) {
 	currentGroupAnswerList := []AnswerList{}
 
 	scanner := bufio.NewScanner(input)
@@ -50,8 +54,7 @@ func getAllAnswerLists(input io.Reader) []AnswerList {
 		line := scanner.Text()
 
 		if line == "" {
-			groupAnswers := getGroupAnswersPart1(currentGroupAnswerList...)
-			allAnswerLists = append(allAnswerLists, groupAnswers)
+			answersPart1, answersPart2 = addNewGroupAnswers(currentGroupAnswerList, answersPart1, answersPart2)
 			currentGroupAnswerList = []AnswerList{}
 		} else {
 			passengerAnswers := getPassengerAnswers(line)
@@ -59,10 +62,19 @@ func getAllAnswerLists(input io.Reader) []AnswerList {
 		}
 	}
 
-	groupAnswers := getGroupAnswersPart1(currentGroupAnswerList...)
-	allAnswerLists = append(allAnswerLists, groupAnswers)
+	answersPart1, answersPart2 = addNewGroupAnswers(currentGroupAnswerList, answersPart1, answersPart2)
 
-	return allAnswerLists
+	return
+}
+
+func addNewGroupAnswers(groupAnswersToAdd, answersPart1, answersPart2 []AnswerList) ([]AnswerList, []AnswerList) {
+	groupAnswersPart1 := getGroupAnswersPart1(groupAnswersToAdd...)
+	groupAnswersPart2 := getGroupAnswersPart2(groupAnswersToAdd...)
+
+	answersPart1 = append(answersPart1, groupAnswersPart1)
+	answersPart2 = append(answersPart2, groupAnswersPart2)
+
+	return answersPart1, answersPart2
 }
 
 func getGroupAnswersPart1(passengerAnswers ...AnswerList) AnswerList {
@@ -75,6 +87,25 @@ func getGroupAnswersPart1(passengerAnswers ...AnswerList) AnswerList {
 	}
 
 	return groupAnswers
+}
+
+func getGroupAnswersPart2(passengerAnswers ...AnswerList) AnswerList {
+	groupAnswer := getAnswerListAtTrue()
+
+	for _, answers := range passengerAnswers {
+		for i := range answers {
+			groupAnswer[i] = groupAnswer[i] && answers[i]
+		}
+	}
+
+	return groupAnswer
+}
+
+func getAnswerListAtTrue() (list AnswerList) {
+	for i := range list {
+		list[i] = true
+	}
+	return
 }
 
 func getPassengerAnswers(input string) (answer AnswerList) {

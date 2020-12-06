@@ -50,20 +50,34 @@ a
 d
 f
 
-kd
-mo`
+ag
+ao`
 
-	got := getAllAnswerLists(strings.NewReader(input))
+	gotPart1, gotPart2 := getAllAnswerLists(strings.NewReader(input))
 
-	answerList1 := AnswerList{0: true, 1: true, 2: true}
-	answerList2 := AnswerList{0: true, 3: true, 5: true}
-	answerList3 := AnswerList{3: true, 10: true, 12: true, 14: true}
-
-	want := []AnswerList{answerList1, answerList2, answerList3}
-
-	if !reflect.DeepEqual(got, want) {
-		t.Errorf("Incorrect lists: got\n%v, want \n%v\n", got, want)
+	wantPart1 := []AnswerList{
+		AnswerList{0: true, 1: true, 2: true},
+		AnswerList{0: true, 3: true, 5: true},
+		AnswerList{0: true, 6: true, 14: true},
 	}
+	wantPart2 := []AnswerList{
+		AnswerList{0: true, 1: true, 2: true},
+		AnswerList{},
+		AnswerList{0: true},
+	}
+
+	assertAnswerListSlice(t, gotPart1, wantPart1)
+	assertAnswerListSlice(t, gotPart2, wantPart2)
+}
+
+func TestGetGroupAnswersPart2(t *testing.T) {
+	answers1 := AnswerList{0: true, 5: true}
+	answers2 := AnswerList{5: true, 15: true}
+
+	got := getGroupAnswersPart2(answers1, answers2)
+	want := AnswerList{5: true}
+
+	assertAnswerList(t, got, want)
 }
 
 func assertInt(t *testing.T, got, want int) {
@@ -77,5 +91,11 @@ func assertInt(t *testing.T, got, want int) {
 func assertAnswerList(t *testing.T, got, want AnswerList) {
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("Incorrect answer list: got %v, want %v\n", got, want)
+	}
+}
+
+func assertAnswerListSlice(t *testing.T, got, want []AnswerList) {
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("Incorrect AnswerList slice: got %v, want %v", got, want)
 	}
 }
