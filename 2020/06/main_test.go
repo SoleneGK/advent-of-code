@@ -7,50 +7,40 @@ import (
 )
 
 func TestGetNumberOfYesAnswers(t *testing.T) {
-	answers := [numberOnQuestions]bool{}
-	answers[5] = true
-	answers[7] = true
+	answers := AnswerList{5: true, 7: true}
 
-	got := getNumberOfYesAnswers(answers)
+	got := answers.GetNumberOfYesAnswers()
 	want := 2
 
 	assertInt(t, got, want)
 }
 
-// It's a private method, I shouldn't test it
-// Since it's a practice problem, i decided to do it anyway
 func TestGetUnicodeValueOfChar(t *testing.T) {
-	answers := AnswerList{}
 	char := []byte("e")[0]
 
-	got := answers.getUnicodeValueOfChar(char)
+	got := getUnicodeValueOfChar(char)
 	want := 101
 
 	assertInt(t, got, want)
 }
 
-func TestAddAnswers(t *testing.T) {
+func TestGetPassengerAnswers(t *testing.T) {
 	rawData := "aek"
-	answers := AnswerList{}
 
-	answers.AddAnswers(rawData)
+	got := getPassengerAnswers(rawData)
+	want := AnswerList{0: true, 4: true, 10: true}
 
-	want := AnswerList{}
-	want[0] = true
-	want[4] = true
-	want[10] = true
-
-	if !reflect.DeepEqual(answers, want) {
-		t.Errorf("Incorrect answer table: got %v, want %v\n", answers, want)
-	}
+	assertAnswerList(t, got, want)
 }
 
-func assertInt(t *testing.T, got, want int) {
-	t.Helper()
+func TestGetGroupAnswersPart1(t *testing.T) {
+	answers1 := AnswerList{0: true, 5: true}
+	answers2 := AnswerList{5: true, 15: true}
 
-	if got != want {
-		t.Errorf("Incorrect number: got %v, want %v\n", got, want)
-	}
+	got := getGroupAnswersPart1(answers1, answers2)
+	want := AnswerList{0: true, 5: true, 15: true}
+
+	assertAnswerList(t, got, want)
 }
 
 func TestGetAllAnswerLists(t *testing.T) {
@@ -65,25 +55,27 @@ mo`
 
 	got := getAllAnswerLists(strings.NewReader(input))
 
-	answerList1 := AnswerList{}
-	answerList1[0] = true
-	answerList1[1] = true
-	answerList1[2] = true
-
-	answerList2 := AnswerList{}
-	answerList2[0] = true
-	answerList2[3] = true
-	answerList2[5] = true
-
-	answerList3 := AnswerList{}
-	answerList3[10] = true
-	answerList3[3] = true
-	answerList3[12] = true
-	answerList3[14] = true
+	answerList1 := AnswerList{0: true, 1: true, 2: true}
+	answerList2 := AnswerList{0: true, 3: true, 5: true}
+	answerList3 := AnswerList{3: true, 10: true, 12: true, 14: true}
 
 	want := []AnswerList{answerList1, answerList2, answerList3}
 
 	if !reflect.DeepEqual(got, want) {
-		t.Errorf("Incorrect lists: got %v, want %v", got, want)
+		t.Errorf("Incorrect lists: got\n%v, want \n%v\n", got, want)
+	}
+}
+
+func assertInt(t *testing.T, got, want int) {
+	t.Helper()
+
+	if got != want {
+		t.Errorf("Incorrect number: got %v, want %v\n", got, want)
+	}
+}
+
+func assertAnswerList(t *testing.T, got, want AnswerList) {
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("Incorrect answer list: got %v, want %v\n", got, want)
 	}
 }

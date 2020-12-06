@@ -18,7 +18,7 @@ func main() {
 	total := 0
 
 	for _, list := range answersLists {
-		total += getNumberOfYesAnswers(list)
+		total += list.GetNumberOfYesAnswers()
 	}
 
 	fmt.Printf("The sum of counts is %d\n", total)
@@ -27,25 +27,11 @@ func main() {
 
 const numberOnQuestions = 26
 
-var unicodeValueOfa = int([]rune("a")[0])
-
 type AnswerList [numberOnQuestions]bool
 
-func (a *AnswerList) AddAnswers(answers string) {
-	for i := 0; i < len(answers); i++ {
-		unicodeValueOfChar := a.getUnicodeValueOfChar(answers[i])
-		index := unicodeValueOfChar - unicodeValueOfa
-		a[index] = true
-	}
-}
-
-func (a *AnswerList) getUnicodeValueOfChar(char byte) int {
-	return int(rune(char))
-}
-
-func getNumberOfYesAnswers(answers [numberOnQuestions]bool) (number int) {
+func (a *AnswerList) GetNumberOfYesAnswers() (number int) {
 	for i := 0; i < numberOnQuestions; i++ {
-		if answers[i] {
+		if a[i] {
 			number++
 		}
 	}
@@ -53,9 +39,10 @@ func getNumberOfYesAnswers(answers [numberOnQuestions]bool) (number int) {
 	return
 }
 
+// refaire
 func getAllAnswerLists(input io.Reader) []AnswerList {
 	allAnswerLists := []AnswerList{}
-	currentAnswerList := AnswerList{}
+	currentGroupAnswerList := []AnswerList{}
 
 	scanner := bufio.NewScanner(input)
 
@@ -63,14 +50,44 @@ func getAllAnswerLists(input io.Reader) []AnswerList {
 		line := scanner.Text()
 
 		if line == "" {
-			allAnswerLists = append(allAnswerLists, currentAnswerList)
-			currentAnswerList = AnswerList{}
+			groupAnswers := getGroupAnswersPart1(currentGroupAnswerList...)
+			allAnswerLists = append(allAnswerLists, groupAnswers)
+			currentGroupAnswerList = []AnswerList{}
 		} else {
-			currentAnswerList.AddAnswers(line)
+			passengerAnswers := getPassengerAnswers(line)
+			currentGroupAnswerList = append(currentGroupAnswerList, passengerAnswers)
 		}
 	}
 
-	allAnswerLists = append(allAnswerLists, currentAnswerList)
+	groupAnswers := getGroupAnswersPart1(currentGroupAnswerList...)
+	allAnswerLists = append(allAnswerLists, groupAnswers)
 
 	return allAnswerLists
+}
+
+func getGroupAnswersPart1(passengerAnswers ...AnswerList) AnswerList {
+	groupAnswers := AnswerList{}
+
+	for _, answers := range passengerAnswers {
+		for i := range answers {
+			groupAnswers[i] = groupAnswers[i] || answers[i]
+		}
+	}
+
+	return groupAnswers
+}
+
+func getPassengerAnswers(input string) (answer AnswerList) {
+	for i := 0; i < len(input); i++ {
+		unicodeValueOfChar := getUnicodeValueOfChar(input[i])
+		index := unicodeValueOfChar - unicodeValueOfa
+		answer[index] = true
+	}
+	return
+}
+
+var unicodeValueOfa = int([]rune("a")[0])
+
+func getUnicodeValueOfChar(char byte) int {
+	return int(rune(char))
 }
