@@ -14,7 +14,11 @@ func main() {
 
 	program := Program{}
 	program.AddInstructionSet(file)
-	value := program.GetAccumulatorValueBeforeLoop()
 
-	fmt.Printf("Last accumulator value before loop is %d\n", value)
+	valuePart1 := program.GetAccumulatorValueBeforeLoop()
+	fmt.Printf("Last accumulator value before loop is %d\n", valuePart1)
+	program.Reset()
+
+	valuePart2 := program.GetAccumulatorValueWithCorrectedProgram()
+	fmt.Printf("End accumulator value in corrected program is %d\n", valuePart2)
 }

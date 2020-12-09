@@ -28,3 +28,12 @@ func (i *Instruction) getInt(intAsString string) int {
 	value, _ := strconv.Atoi(intAsString)
 	return value
 }
+
+func (i *Instruction) SwitchType() {
+	switch i.Type {
+	case "nop":
+		i.Type = "jmp"
+	case "jmp":
+		i.Type = "nop"
+	}
+}

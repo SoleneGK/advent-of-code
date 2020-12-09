@@ -46,3 +46,53 @@ func (p *Program) AddInstructionSet(instructionSet io.Reader) {
 		p.AddInstruction(scanner.Text())
 	}
 }
+
+func (p *Program) GetAccumulatorValueWithCorrectedProgram() int {
+	for i := 0; i < len(p.InstructionList); i++ {
+		success := p.TestCorrection(i)
+
+		if success {
+			return p.Accumulator
+		}
+
+		p.Reset()
+	}
+
+	return 0
+}
+
+func (p *Program) TestCorrection(instructionNumber int) (success bool) {
+	modifiedInstruction := p.InstructionList[instructionNumber]
+
+	if modifiedInstruction.Type == "acc" {
+		return false
+	}
+
+	modifiedInstruction.SwitchType()
+	defer modifiedInstruction.SwitchType()
+
+	return !p.HasALoop()
+}
+
+func (p *Program) HasALoop() bool {
+	for p.Pointer < len(p.InstructionList) {
+		currentInstruction := p.InstructionList[p.Pointer]
+
+		if !currentInstruction.HasBeenExecuted {
+			p.ExecuteInstruction(currentInstruction)
+		} else {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (p *Program) Reset() {
+	p.Accumulator = 0
+	p.Pointer = 0
+
+	for _, instruction := range p.InstructionList {
+		instruction.HasBeenExecuted = false
+	}
+}
