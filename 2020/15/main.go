@@ -9,6 +9,11 @@ func main() {
 	positionPart1 := 2020
 	answerPart1 := getNthValue(input, positionPart1)
 	fmt.Printf("The %dth number spoken will be %d\n", positionPart1, answerPart1)
+
+	// Ok, go is performant enough that i don't have to find another implementation
+	positionPart2 := 30000000
+	answerPart2 := getNthValue(input, positionPart2)
+	fmt.Printf("The %dth number spoken will be %d\n", positionPart2, answerPart2)
 }
 
 func getNthValue(input []int, position int) int {
