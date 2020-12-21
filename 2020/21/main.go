@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"sort"
 	"strings"
 )
 
@@ -15,8 +16,9 @@ func main() {
 	}
 	defer file.Close()
 
-	answerPart1 := getAnswerPart1(file)
-	fmt.Printf("The answer is %d\n", answerPart1)
+	answerPart1, answerPart2 := getAnswers(file)
+	fmt.Printf("The answer for part 1 is %d\n", answerPart1)
+	fmt.Printf("The answer for part 2 is %s\n", answerPart2)
 }
 
 var (
@@ -24,7 +26,7 @@ var (
 	allergenList   []Allergen
 )
 
-func getAnswerPart1(file io.Reader) int {
+func getAnswers(file io.Reader) (answerPart1 int, answerPart2 string) {
 	foodList := getFoodList(file)
 	ingredientList = getIngredientList(foodList)
 	allergenList = getAllergenList(foodList)
@@ -32,7 +34,10 @@ func getAnswerPart1(file io.Reader) int {
 	possibleAllergenIngredientCombinations := getPossibleAllergenIngredientCombination(foodList)
 	ingredentsWithoutAllergen := getIngredientsWithoutAllergen(possibleAllergenIngredientCombinations)
 
-	return getNumberOfOccurences(ingredentsWithoutAllergen, foodList)
+	answerPart1 = getNumberOfOccurences(ingredentsWithoutAllergen, foodList)
+	answerPart2 = getAnswerPart2(possibleAllergenIngredientCombinations)
+
+	return
 }
 
 func getFoodList(file io.Reader) (foodList []Food) {
@@ -149,6 +154,61 @@ func getNumberOfOccurences(ingredientList []Ingredient, foodList []Food) (number
 	for _, food := range foodList {
 		number += len(getIngredientIntersection(ingredientList, food.Ingredients))
 	}
+	return
+}
+
+func getAnswerPart2(possibleAllergenIngredientCombinations map[Allergen][]Ingredient) string {
+	combinations := findCombinations(possibleAllergenIngredientCombinations)
+	return formatAnswer(combinations)
+}
+
+func findCombinations(possibleAllergenIngredientCombinations map[Allergen][]Ingredient) map[Allergen]Ingredient {
+	combination := map[Allergen]Ingredient{}
+
+	for len(possibleAllergenIngredientCombinations) > 0 {
+		for allergen, ingredientList := range possibleAllergenIngredientCombinations {
+			if len(ingredientList) == 1 {
+				combination[allergen] = ingredientList[0]
+				delete(possibleAllergenIngredientCombinations, allergen)
+				removeAllIngredientOccurences(possibleAllergenIngredientCombinations, ingredientList[0])
+			}
+		}
+	}
+
+	return combination
+}
+
+func removeAllIngredientOccurences(table map[Allergen][]Ingredient, ingredient Ingredient) {
+	for allergen, ingredientList := range table {
+		table[allergen] = removeIngredient(ingredientList, ingredient)
+	}
+}
+
+func formatAnswer(combinations map[Allergen]Ingredient) (answer string) {
+	sortedAllergens := sortAllergens(allergenList)
+
+	answer += string(combinations[sortedAllergens[0]])
+
+	for i := 1; i < len(sortedAllergens); i++ {
+		answer += "," + string(combinations[sortedAllergens[i]])
+	}
+
+	return
+}
+
+func sortAllergens(unsortedList []Allergen) (sortedList []Allergen) {
+	stringList := []string{}
+
+	for _, allergen := range unsortedList {
+		stringList = append(stringList, string(allergen))
+	}
+
+	sort.Strings(stringList)
+
+	for _, allergen := range stringList {
+		sortedList = append(sortedList, Allergen(allergen))
+	}
+
 	return
 }
 
