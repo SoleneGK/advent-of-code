@@ -4,7 +4,7 @@ main = do
     (path:_) <- getArgs
     fileContent <- readFile path
     let values = map read (lines fileContent)
-        answerPart1 = (length . getWhenDeeper . pairing) values
+        answerPart1 = getAnswerPart1 values
         answerPart2 = getAnswerPart2 values
     putStrLn $ "The answer for part 1 is: " ++ (show answerPart1)
     putStrLn $ "The answer for part 2 is: " ++ (show answerPart2)
@@ -17,14 +17,14 @@ pairing (x:y:xs) = (x,y) : pairing (y:xs)
 getWhenDeeper :: [(Int, Int)] -> [(Int, Int)]
 getWhenDeeper = filter (\(x,y) -> x < y)
 
-makeTuples :: [Int] -> [(Int, Int, Int)]
-makeTuples [] = []
-makeTuples [a] = []
-makeTuples [a, b] = []
-makeTuples (x:y:z:xs) = (x,y,z) : makeTuples (y:z:xs)
+getAnswerPart1 :: [Int] -> Int
+getAnswerPart1 = (length . getWhenDeeper . pairing)
 
-sumTuple :: (Int, Int, Int) -> Int
-sumTuple (a, b, c) = a + b + c
+sumOf3 :: [Int] -> [Int]
+sumOf3 [] = []
+sumOf3 [a] = []
+sumOf3 [a, b] = []
+sumOf3 (x:y:z:xs) = (x+y+z) : sumOf3 (y:z:xs)
 
 getAnswerPart2 :: [Int] -> Int
-getAnswerPart2 = length . getWhenDeeper . pairing . (map sumTuple) . makeTuples
+getAnswerPart2 = getAnswerPart1 . sumOf3
