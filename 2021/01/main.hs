@@ -6,8 +6,8 @@ main = do
     let values = map read (lines fileContent)
         answerPart1 = getAnswerPart1 values
         answerPart2 = getAnswerPart2 values
-    putStrLn $ "The answer for part 1 is: " ++ (show answerPart1)
-    putStrLn $ "The answer for part 2 is: " ++ (show answerPart2)
+    putStrLn $ "The answer for part 1 is: " ++ show answerPart1
+    putStrLn $ "The answer for part 2 is: " ++ show answerPart2
 
 pairing :: [Int] -> [(Int, Int)]
 pairing [] = []
@@ -18,7 +18,7 @@ getWhenDeeper :: [(Int, Int)] -> [(Int, Int)]
 getWhenDeeper = filter (\(x,y) -> x < y)
 
 getAnswerPart1 :: [Int] -> Int
-getAnswerPart1 = (length . getWhenDeeper . pairing)
+getAnswerPart1 = length . getWhenDeeper . pairing
 
 sumOf3 :: [Int] -> [Int]
 sumOf3 [] = []
