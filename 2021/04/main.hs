@@ -1,5 +1,5 @@
 import Data.List.Split(splitOn, splitWhen)
-import Data.List (transpose)
+import Data.List (transpose, partition)
 import System.Environment (getArgs)
 import Text.Html (content)
 
@@ -107,6 +107,17 @@ sumUncrossedValues' = foldr ((+) . caseToInt) 0
 sumUncrossedValues :: Board -> Int
 sumUncrossedValues = foldr ((+) . sumUncrossedValues') 0
 
+-- solve part 2 problem
+
+getLastWinningBoard :: [Int] -> [Board] -> (Int, Board)
+getLastWinningBoard _ [] = (0, [])
+getLastWinningBoard [] _ = (0, [])
+getLastWinningBoard (x:xs) boards
+    | null notWinningBoards = (x, head winningBoards)
+    | otherwise = getLastWinningBoard xs notWinningBoards
+    where crossedBoards = map (crossBoard x) boards
+          (winningBoards, notWinningBoards) = partition isWinnerBoard crossedBoards
+
 -- now we use all of that
 
 main :: IO ()
@@ -117,7 +128,12 @@ main = do
     let draw = getDraw content
         boards = getBoards content
         (lastNumber, winningBoard) = getWinningBoard draw boards
-    
+
     putStrLn $ "The last number called is: " ++ show lastNumber
-    putStrLn $ "Ther winning board is: " ++ show winningBoard
+    putStrLn $ "The winning board is: " ++ show winningBoard
     putStrLn $ "The answer for part 1 is:" ++ show (lastNumber * sumUncrossedValues winningBoard)
+
+    let (lastNumberPart2, lastWinningBoard) = getLastWinningBoard draw boards
+    putStrLn $ "The last number called is: " ++ show lastNumberPart2
+    putStrLn $ "The last winning board is: " ++ show lastWinningBoard
+    putStrLn $ "The answer for part 2 is:" ++ show (lastNumberPart2 * sumUncrossedValues lastWinningBoard)
