@@ -27,8 +27,6 @@ convertToLine _ = (Coordinates (0, 0), Coordinates (0, 0))
 extractLine :: String -> Line
 extractLine = convertToLine . splitOn " -> "
 
------ solve part 1
-
 filterStraightLines :: [Line] -> [Line]
 filterStraightLines = filter (\(Coordinates (x1,y1), Coordinates (x2, y2)) -> x1 == x2 || y1 == y2)
 
@@ -37,10 +35,17 @@ getSetOfCoordinates [] _ = []
 getSetOfCoordinates _ [] = []
 getSetOfCoordinates (x:xs) (y:ys) = Coordinates (x, y) : getSetOfCoordinates xs ys
 
+getRange :: Int -> Int -> [Int]
+getRange a b
+    | a < b = [a..b]
+    | a > b = reverse [b..a]
+    | otherwise = repeat a
+
 getCoordinatesOnLine :: Line -> [Coordinates]
 getCoordinatesOnLine (Coordinates (x1, y1), Coordinates (x2, y2))
     | x1 == x2 = getSetOfCoordinates (repeat x1) [min y1 y2..max y1 y2]
-    | otherwise = getSetOfCoordinates [min x1 x2..max x1 x2] (repeat y2)
+    | y1 == y2 = getSetOfCoordinates [min x1 x2..max x1 x2] (repeat y2)
+    | otherwise = getSetOfCoordinates (getRange x1 x2) (getRange y1 y2)
 
 getAllCoordinates :: [Line] -> [Coordinates]
 getAllCoordinates = concatMap getCoordinatesOnLine
@@ -56,3 +61,6 @@ main = do
     content <- getContent path
     let answerPart1 = (getNumberOfOverlaps . getAllCoordinates . filterStraightLines) content
     putStrLn $ "The answer for part 1 is: " ++ show answerPart1
+
+    let answerPart2 = (getNumberOfOverlaps . getAllCoordinates) content
+    putStrLn $ "The answer for part 2 is: " ++ show answerPart2
