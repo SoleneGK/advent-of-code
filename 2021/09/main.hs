@@ -1,6 +1,7 @@
-import Data.Array
+import Data.Array (Array, (!), array, bounds)
 import Data.List.Split (chunksOf)
 import System.Environment (getArgs)
+import Data.List (nub, sort)
 
 type X = Int
 type Y = Int
@@ -9,7 +10,6 @@ type Coordinates = (X, Y)
 type Height = Int
 type Heightmap = Array Coordinates Height
 type Heightlist = [(Coordinates, Height)]
-
 
 int :: String -> Int
 int s = read s :: Int
@@ -61,9 +61,40 @@ answerPart1 :: Heightmap -> Int
 answerPart1 hmap = sum $ map (\(c, h) -> h+1) lowPoints
     where lowPoints = getLowPoints hmap
 
+------------------- part 2 -------------------
+
+getNeighbourCoordinates :: Coordinates -> [Coordinates]
+getNeighbourCoordinates (x, y) = [(x-1, y), (x+1, y), (x, y-1), (x, y+1)]
+
+inArray :: Heightmap -> Coordinates -> Bool
+inArray hmap (x, y) = x >= 1 && x <= maxX && y >= 1 && y <= maxY
+    where (maxX, maxY) = snd $ bounds hmap
+
+getBasin :: Heightmap -> [Coordinates] -> Coordinates -> [Coordinates]
+getBasin hmap basin c
+    | inArray hmap c && hmap!c /= 9 && notElem c basin = basin4
+    | otherwise = basin
+    where newBasin = c : basin
+          [n1, n2, n3, n4] = getNeighbourCoordinates c
+          basin1 = getBasin hmap newBasin n1
+          basin2 = getBasin hmap basin1 n2
+          basin3 = getBasin hmap basin2 n3
+          basin4 = getBasin hmap basin3 n4
+
+getBasin' :: Heightmap -> Coordinates -> [Coordinates]
+getBasin' hmap = getBasin hmap []
+
+getBasinList :: Heightmap -> [[Coordinates]]
+getBasinList hmap = map (getBasin' hmap) lowPoints
+    where lowPoints = map fst (getLowPoints hmap)
+
+getThreeLargestBasins :: Heightmap -> [Int]
+getThreeLargestBasins hmap = take 3 . reverse . sort $ map length (getBasinList hmap)
+
 main :: IO ()
 main = do
     (path:_) <- getArgs
     rawInput <- readInput path
     let hmap = getHeightmap rawInput
     putStrLn $ "The answer for part 1 is: " ++ show (answerPart1 hmap)
+    putStrLn $ "The answer for part 2 is: " ++ show (product $ getThreeLargestBasins hmap)
