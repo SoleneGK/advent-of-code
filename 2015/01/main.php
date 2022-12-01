@@ -17,3 +17,21 @@ foreach ($instructionList as $instruction) {
 }
 
 echo "The final floor is $floor\n";
+
+$floor = 0;
+$i = 0;
+
+while (-1 !== $floor) {
+    switch ($instructionList[$i]) {
+        case '(':
+            ++$floor;
+            break;
+        case ')':
+            --$floor;
+            break;
+    }
+
+    ++$i;
+}
+
+echo "The answer for part 2 is $i\n";
