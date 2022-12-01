@@ -23,3 +23,10 @@ while (false !== $line = fgets($file)) {
 $maxCalories = max($elfCalories);
 
 echo "The answer for part 1 is $maxCalories\n";
+
+sort($elfCalories);
+$firstThreeElves = array_slice($elfCalories, 0, 3);
+
+$firstThreeElvesCalories = array_sum($firstThreeElves);
+
+echo "The answer for part 2 is $firstThreeElvesCalories\n";
