@@ -6,33 +6,55 @@ $directionList = str_split($directionInput);
 $houses = [];
 
 // Départ
-$x = 0;
-$y = 0;
-$houses[$x][$y] = 1;
+$xSanta = 0;
+$ySanta = 0;
+$xRoboSanta = 0;
+$yRoboSanta = 0;
+$houses[0][0] = 2;
 
 // Noter le nombre de visites dans chaque maison
-foreach ($directionList as $direction) {
-    switch ($direction) {
-        case '<':
-            --$y;
-            break;
-        case '>':
-            ++$y;
-            break;
-        case '^':
-            ++$x;
-            break;
-        case 'v':
-            --$x;
+foreach ($directionList as $key => $direction) {
+    if (0 === $key % 2) {
+        switch ($direction) {
+            case '<':
+                --$ySanta;
+                break;
+            case '>':
+                ++$ySanta;
+                break;
+            case '^':
+                ++$xSanta;
+                break;
+            case 'v':
+                --$xSanta;
+        }
+
+        if (!isset($houses[$xSanta][$ySanta])) {
+            $houses[$xSanta][$ySanta] = 1;
+
+            continue;
+        }
+    } else {
+        switch ($direction) {
+            case '<':
+                --$yRoboSanta;
+                break;
+            case '>':
+                ++$yRoboSanta;
+                break;
+            case '^':
+                ++$xRoboSanta;
+                break;
+            case 'v':
+                --$xRoboSanta;
+        }
+
+        if (!isset($houses[$xRoboSanta][$yRoboSanta])) {
+            $houses[$xRoboSanta][$yRoboSanta] = 1;
+
+            continue;
+        }
     }
-
-    if (!isset($houses[$x][$y])) {
-        $houses[$x][$y] = 1;
-
-        continue;
-    }
-
-    $houses[$x][$y]++;
 }
 
 // Compter le nombre de maisons visitées
@@ -44,4 +66,4 @@ foreach ($houses as $houseRow) {
     }
 }
 
-echo "Santa has visited $numberOfHousesVisited houses\n";
+echo "Santa and Robo-Santa have visited $numberOfHousesVisited houses\n";
