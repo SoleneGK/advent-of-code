@@ -4,7 +4,7 @@ $secretKey = 'ckczppom';
 
 $i = 1;
 
-while (!str_starts_with(md5($secretKey.$i), '00000')) {
+while (!str_starts_with(md5($secretKey.$i), '000000')) {
 	++$i;
 }
 
