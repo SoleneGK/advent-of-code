@@ -53,16 +53,52 @@ function getOutcomeScore(string $playerChoice, string $opponentChoice): int
     return 6;
 }
 
-$score = 0;
+/**
+ * Pour $wantedOutcome :
+ * X = défaite
+ * Y = égalité
+ * Z = victoire
+ */
+function computeChoice(string $opponentChoice, string $wantedOutcome): string
+{
+    if ('Y' === $wantedOutcome) {
+        return $opponentChoice;
+    }
 
-while (false !== $line = fgets($file)) {
-    [$opponentChoice, $playerChoice] = explode(' ', $line);
-    $playerChoice = trim($playerChoice);
+    if ('X' === $wantedOutcome) {
+        return match ($opponentChoice) {
+            'Rock' => 'Scissors',
+            'Paper' => 'Rock',
+            default => 'Paper',
+        };
+    }
 
-    $opponentChoice = $conversion[$opponentChoice];
-    $playerChoice = $conversion[$playerChoice];
-
-    $score += $choiceScore[$playerChoice] + getOutcomeScore($playerChoice, $opponentChoice);
+    return match ($opponentChoice) {
+        'Rock' => 'Paper',
+        'Paper' => 'Scissors',
+        default => 'Rock',
+    };
 }
 
-echo "The total score for part 1 would be $score\n";
+$scorePart1 = 0;
+$scorePart2 = 0;
+
+while (false !== $line = fgets($file)) {
+    [$opponentData, $playerData] = explode(' ', $line);
+    $playerData = trim($playerData);
+
+    $opponentChoice = $conversion[$opponentData];
+
+    // Part 1
+    $playerChoicePart1 = $conversion[$playerData];
+    $scorePart1 += $choiceScore[$playerChoicePart1]
+        + getOutcomeScore($playerChoicePart1, $opponentChoice);
+
+    // Part 2
+    $playerChoicePart2 = computeChoice($opponentChoice, $playerData);
+    $scorePart2 += $choiceScore[$playerChoicePart2]
+        + getOutcomeScore($playerChoicePart2, $opponentChoice);
+}
+
+echo "The total score for part 1 would be $scorePart1\n";
+echo "The total score for part 2 would be $scorePart2\n";
