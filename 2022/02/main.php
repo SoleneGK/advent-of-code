@@ -2,81 +2,80 @@
 
 $file = fopen('input.txt', 'rb');
 
-$conversion = [
-    'A' => 'Rock',
-    'B' => 'Paper',
-    'C' => 'Scissors',
-    'X' => 'Rock',
-    'Y' => 'Paper',
-    'Z' => 'Scissors',
-];
-
-$choiceScore = [
-    'Rock' => 1,
-    'Paper' => 2,
-    'Scissors' => 3,
-];
-
-function getOutcomeScore(string $playerChoice, string $opponentChoice): int
+enum Choice
 {
-    // Paper / Paper - Rock / Rock - Scissors / Scissors
-    if ($playerChoice === $opponentChoice) {
-        return 3;
-    }
-
-    if ('Rock' === $playerChoice) {
-        // Rock / Paper
-        if ('Paper' === $opponentChoice) {
-            return 0;
-        }
-
-        // Rock / Scissors
-        return 6;
-    }
-
-    if ('Paper' === $playerChoice) {
-        // Paper / Rock
-        if ('Rock' === $opponentChoice) {
-            return 6;
-        }
-
-        // Paper / Scissors
-        return 0;
-    }
-
-    // Scissors / Rock
-    if ('Rock' === $opponentChoice) {
-        return 0;
-    }
-
-    // Scissors / Paper
-    return 6;
+    case Rock;
+    case Paper;
+    case Scissors;
 }
 
-/**
- * Pour $wantedOutcome :
- * X = défaite
- * Y = égalité
- * Z = victoire
- */
-function computeChoice(string $opponentChoice, string $wantedOutcome): string
+function getChoice(string $rawChoice): Choice
 {
-    if ('Y' === $wantedOutcome) {
-        return $opponentChoice;
-    }
+    return match ($rawChoice) {
+        'A', 'X' => Choice::Rock,
+        'B', 'Y' => Choice::Paper,
+        'C', 'Z' => Choice::Scissors,
+    };
+}
 
-    if ('X' === $wantedOutcome) {
-        return match ($opponentChoice) {
-            'Rock' => 'Scissors',
-            'Paper' => 'Rock',
-            default => 'Paper',
-        };
-    }
+function getChoiceScore(Choice $choice): int
+{
+    return match ($choice) {
+        Choice::Rock => 1,
+        Choice::Paper => 2,
+        Choice::Scissors => 3,
+    };
+}
 
-    return match ($opponentChoice) {
-        'Rock' => 'Paper',
-        'Paper' => 'Scissors',
-        default => 'Rock',
+function getOutcomeScore(Choice $playerChoice, Choice $opponentChoice): int
+{
+    return match ([$playerChoice, $opponentChoice]) {
+        [Choice::Rock, Choice::Rock],
+            [Choice::Paper, Choice::Paper],
+            [Choice::Scissors, Choice::Scissors]
+            => 3,
+        [Choice::Rock, Choice::Paper],
+            [Choice::Scissors, Choice::Rock],
+            [Choice::Paper, Choice::Scissors]
+            => 0,
+        [Choice::Rock, Choice::Scissors],
+            [Choice::Paper, Choice::Rock],
+            [Choice::Scissors, Choice::Paper]
+            => 6,
+    };
+}
+
+enum Outcome
+{
+    case Loss;
+    case Draw;
+    case Win;
+}
+
+function getOutcome(string $rawOutcome): Outcome
+{
+    return match ($rawOutcome) {
+        'X' => Outcome::Loss,
+        'Y' => Outcome::Draw,
+        'Z' => Outcome::Win,
+    };
+}
+
+function computeChoice(Choice $opponentChoice, Outcome $wantedOutcome): Choice
+{
+    return match ([$opponentChoice, $wantedOutcome]) {
+        [Choice::Rock, Outcome::Loss],
+            [Choice::Scissors, Outcome::Draw],
+            [Choice::Paper, Outcome::Win]
+            => Choice::Scissors,
+        [Choice::Paper, Outcome::Loss],
+            [Choice::Rock, Outcome::Draw],
+            [Choice::Scissors, Outcome::Win]
+            => Choice::Rock,
+        [Choice::Scissors, Outcome::Loss],
+            [Choice::Paper, Outcome::Draw],
+            [Choice::Rock, Outcome::Win]
+            => Choice::Paper,
     };
 }
 
@@ -87,16 +86,17 @@ while (false !== $line = fgets($file)) {
     [$opponentData, $playerData] = explode(' ', $line);
     $playerData = trim($playerData);
 
-    $opponentChoice = $conversion[$opponentData];
+    $opponentChoice = getChoice($opponentData);
 
     // Part 1
-    $playerChoicePart1 = $conversion[$playerData];
-    $scorePart1 += $choiceScore[$playerChoicePart1]
+    $playerChoicePart1 = getChoice($playerData);
+    $scorePart1 += getChoiceScore($playerChoicePart1)
         + getOutcomeScore($playerChoicePart1, $opponentChoice);
 
     // Part 2
-    $playerChoicePart2 = computeChoice($opponentChoice, $playerData);
-    $scorePart2 += $choiceScore[$playerChoicePart2]
+    $wantedOutcome = getOutcome($playerData);
+    $playerChoicePart2 = computeChoice($opponentChoice, $wantedOutcome);
+    $scorePart2 += getChoiceScore($playerChoicePart2)
         + getOutcomeScore($playerChoicePart2, $opponentChoice);
 }
 
