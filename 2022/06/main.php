@@ -2,21 +2,25 @@
 
 $input = file_get_contents('input.txt');
 
-$maxOffset = strlen($input) - 4;
+function getFirstPositionWithoutDuplicate(string $input, int $length): int
+{
+    $maxOffset = strlen($input) - $length;
 
 // For each position of first character
-for ($i = 0; $i < $maxOffset; ++$i) {
-    // Get the 4 char string
-    $potentialMarker = substr($input, $i, 4);
-    // Remove duplicates
-    $potentialMarkerWithoutDuplicate = array_unique(str_split($potentialMarker));
+    for ($i = 0; $i < $maxOffset; ++$i) {
+        // Get the 4 char string
+        $potentialMarker = substr($input, $i, $length);
+        // Remove duplicates
+        $potentialMarkerWithoutDuplicate = array_unique(str_split($potentialMarker));
 
-    // If no duplicate, the size are the same
-    if (\strlen($potentialMarker) === \count($potentialMarkerWithoutDuplicate)) {
-        break;
+        // If no duplicate, the size are the same
+        if (\strlen($potentialMarker) === \count($potentialMarkerWithoutDuplicate)) {
+            return $i + $length;
+        }
     }
+
+    return -1;
 }
 
-$answerPart1 = $i + 4;
-
-echo "The answer for part 1 is $answerPart1\n";
+echo 'The answer for part 1 is '.getFirstPositionWithoutDuplicate($input, 4)."\n";
+echo 'The answer for part 1 is '.getFirstPositionWithoutDuplicate($input, 14)."\n";
