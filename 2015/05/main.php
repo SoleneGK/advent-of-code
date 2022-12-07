@@ -25,8 +25,7 @@ function isNice(string $string): bool
     }
 
     // Does the string contains a double letter?
-    $stringAsArray = str_split($string);
-    $iMax = count($stringAsArray) - 1;
+    $iMax = strlen($string) - 1;
 
     for ($i = 0; $i < $iMax; ++$i) {
         if ($string[$i] === $string[$i+1]) {
