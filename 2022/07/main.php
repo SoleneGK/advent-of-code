@@ -205,3 +205,21 @@ foreach ($sizeList as $name => $size) {
 }
 
 echo "The answer for part 1 is $answerPart1\n";
+
+$totalDiskSpace = 70000000;
+$updateSize = 30000000;
+$currentFreeSpace = $totalDiskSpace - $rootDir->getSize();
+$spaceToFree = $updateSize - $currentFreeSpace;
+
+echo "The disk has a total size of $totalDiskSpace\n";
+echo "The update need $updateSize of free space\n";
+echo "There is currently $currentFreeSpace space free, meaning $spaceToFree must be freed\n";
+
+$bigEnoughSizes = array_filter($sizeList, function($value) use ($spaceToFree) {
+    return $value >= $spaceToFree;
+});
+
+sort($bigEnoughSizes);
+$answerPart2 = $bigEnoughSizes[0];
+
+echo "The size of the smallest directory to delete to free this space is $answerPart2\n";
