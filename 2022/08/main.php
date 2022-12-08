@@ -1,5 +1,8 @@
 <?php
 
+// I'm pretty sure I can do better than all those loops with the same structure
+// but I'm supposed to work, so...
+
 function display(array $map): void
 {
     $size = count($map);
@@ -109,3 +112,93 @@ for ($row = 0; $row < $size; ++$row) {
 }
 
 echo "There are $numberOfVisibleTrees visible trees\n";
+
+
+
+function getScenicValue(array $map, int $row, int $col): int
+{
+    $size = count($map);
+
+    // On an edge
+    if (0 === $row || 0 === $col || $size === $row || $size === $col) {
+        return 0;
+    }
+
+    $scenicValue = 1;
+
+    // To the top
+    $numberOfTreesVisibles = 0;
+
+    for ($i = $row - 1; $i >= 0; --$i) {
+        ++$numberOfTreesVisibles;
+
+        // Same height or bigger tree : stop counting
+        if ($map[$i][$col] >= $map[$row][$col]) {
+            break;
+        }
+    }
+
+    $scenicValue *= $numberOfTreesVisibles;
+
+    // To the top
+    $numberOfTreesVisibles = 0;
+
+    for ($i = $row + 1; $i < $size; ++$i) {
+        ++$numberOfTreesVisibles;
+
+        // Same height or bigger tree : stop counting
+        if ($map[$i][$col] >= $map[$row][$col]) {
+            break;
+        }
+    }
+
+    $scenicValue *= $numberOfTreesVisibles;
+
+    // To the left
+    $numberOfTreesVisibles = 0;
+
+    for ($i = $col - 1; $i >= 0; --$i) {
+        ++$numberOfTreesVisibles;
+
+        // Same height or bigger tree : stop counting
+        if ($map[$row][$i] >= $map[$row][$col]) {
+            break;
+        }
+    }
+
+    $scenicValue *= $numberOfTreesVisibles;
+
+    // To the right
+    $numberOfTreesVisibles = 0;
+
+    for ($i = $col + 1; $i < $size; ++$i) {
+        ++$numberOfTreesVisibles;
+
+        // Same height or bigger tree : stop counting
+        if ($map[$row][$i] >= $map[$row][$col]) {
+            break;
+        }
+    }
+
+    $scenicValue *= $numberOfTreesVisibles;
+
+    return $scenicValue;
+}
+
+echo getScenicValue($map, 3, 2)."\n";
+
+
+$maxScenicValue = 0;
+
+for ($row = 0; $row < $size; ++$row) {
+    for ($col = 0; $col < $size; ++$col) {
+        $scenicValue = getScenicValue($map, $row, $col);
+
+        if ($scenicValue > $maxScenicValue) {
+            $maxScenicValue = $scenicValue;
+        }
+
+    }
+}
+
+echo "The highest scenic score possible is $maxScenicValue\n";
