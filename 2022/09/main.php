@@ -44,7 +44,7 @@ class Knot
     }
 
     /**
-     * I've check the possible movements for the tail, based on its
+     * I've checked the possible movements for the tail, based on its
      * relative position to the head and identified a pattern:
      * I don't have to check for all possible tail positions, only
      * if there is a 2-distance in the col or row direction
@@ -68,22 +68,42 @@ class Knot
      *
      * Head = $knot
      * Tail = $this
+     *
+     * Part 2: damn, I have to add some cases
      */
     public function follow(Knot $knot): void
     {
-        if ($this->col === $knot->col - 2) {
-            $this->col = $knot->col - 1;
-            $this->row = $knot->row;
-        } else if ($this->col === $knot->col + 2) {
-            $this->col = $knot->col + 1;
-            $this->row = $knot->row;
-        } else if ($this->row === $knot->row - 2) {
-            $this->row = $knot->row - 1;
-            $this->col = $knot->col;
-        } else if ($this->row === $knot->row + 2) {
-            $this->row = $knot->row + 1;
-            $this->col = $knot->col;
-        }
+        $offset = [
+            'row' => $this->row - $knot->getRow(),
+            'col' => $this->col - $knot->getCol(),
+        ];
+
+        $newOffset = match ($offset) {
+            ['row' => -2, 'col' => -2] => ['row' => -1, 'col' => -1],
+            ['row' => 2, 'col' => -2] => ['row' => 1, 'col' => -1],
+            ['row' => 2, 'col' => 2] => ['row' => 1, 'col' => 1],
+            ['row' => -2, 'col' => 2] => ['row' => -1, 'col' => 1],
+            ['row' => -2, 'col' => -1],
+                ['row' => -2, 'col' => 0],
+                ['row' => -2, 'col' => 1]
+                => ['row' => -1, 'col' => 0],
+            ['row' => 2, 'col' => -1],
+                ['row' => 2, 'col' => 0],
+                ['row' => 2, 'col' => 1]
+                => ['row' => 1, 'col' => 0],
+            ['row' => -1, 'col' => -2],
+                ['row' => 0, 'col' => -2],
+                ['row' => 1, 'col' => -2]
+                => ['row' => 0, 'col' => -1],
+            ['row' => -1, 'col' => 2],
+                ['row' => 0, 'col' => 2],
+                ['row' => 1, 'col' => 2]
+                => ['row' => 0, 'col' => 1],
+            default => $offset,
+        };
+
+        $this->row = $knot->getRow() + $newOffset['row'];
+        $this->col = $knot->getCol() + $newOffset['col'];
 
         $this->nextKnot?->follow($this);
     }
@@ -102,21 +122,37 @@ function countArray(array $array): int
     return $count;
 }
 
-$head = new Knot();
-$tail = new Knot();
-$head->setNextKnot($tail);
+// Set up part 1
+$headPart1 = new Knot();
+$tailPart1 = new Knot();
+$headPart1->setNextKnot($tailPart1);
 
-$positionsVisitedPart1 = [];
+$positionsVisitedPart1[0][0] = true;
+
+// Set up part 2
+$headPart2 = new Knot();
+$tailPart2 = $headPart2;
+
+for ($i = 1; $i <= 9; $i++) {
+    $newKnot = new Knot();
+    $tailPart2->setNextKnot($newKnot);
+    $tailPart2 = $newKnot;
+}
+
+$positionsVisitedPart2[0][0] = true;
 
 while (false !== $instruction = fgets($instructionList)) {
     [$direction, $numberOfSteps] = explode(' ', $instruction);
 
     for ($i = 0; $i < $numberOfSteps; ++$i) {
-        $head->move($direction);
+        $headPart1->move($direction);
+        $positionsVisitedPart1[$tailPart1->getRow()][$tailPart1->getCol()] = true;
 
-        $positionsVisitedPart1[$tail->getRow()][$tail->getCol()] = true;
+        $headPart2->move($direction);
+        $positionsVisitedPart2[$tailPart2->getRow()][$tailPart2->getCol()] = true;
     }
 }
 
 echo 'The answer for part 1 is '.countArray($positionsVisitedPart1)."\n";
+echo 'The answer for part 2 is '.countArray($positionsVisitedPart2)."\n";
 
