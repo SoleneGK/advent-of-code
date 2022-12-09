@@ -2,78 +2,90 @@
 
 $instructionList = fopen('input.txt', 'rb');
 
-function moveHead(int &$rowHead, int &$colHead, string $direction): void
+class Knot
 {
-    switch ($direction) {
-        case 'U':
-            ++$rowHead;
-            break;
-        case 'D':
-            --$rowHead;
-            break;
-        case 'L':
-            --$colHead;
-            break;
-        case 'R':
-            ++$colHead;
-            break;
-    }
-}
+    private int $row = 0;
+    private int $col = 0;
+    private ?Knot $nextKnot = null;
 
-/**
- * I've check the possible movements for the tail, based on its
- * relative position to the head and identified a pattern:
- * I don't have to check for all possible tail positions, only
- * if there is a 2-distance in the col or row direction
- * It is enough to deduce the new tail position
- *
- * For example, if the tail is 2 cols lower than the head, it
- * will move to be just in top of the head, whichever row it
- * was in before
- *
- * T..    ...
- * ... -> .T.
- * .H.    .H.
- *
- * .T.    ...
- * ... -> .T.
- * .H.    .H.
- *
- * ..T    ...
- * ... -> .T.
- * .H.    .H.
- */
-function moveTail(
-    int $rowHead,
-    int $colHead,
-    int &$rowTail,
-    int &$colTail
-): void
-{
-    if ($colTail === $colHead - 2) {
-        $colTail = $colHead - 1;
-        $rowTail = $rowHead;
-
-        return;
+    public function getRow(): int
+    {
+        return $this->row;
     }
 
-    if ($colTail === $colHead + 2) {
-        $colTail = $colHead + 1;
-        $rowTail = $rowHead;
-
-        return;
+    public function getCol(): int
+    {
+        return $this->col;
     }
 
-    if ($rowTail === $rowHead - 2) {
-        $rowTail = $rowHead - 1;
-        $colTail = $colHead;
-
-        return;
+    public function setNextKnot(Knot $nextKnot): void
+    {
+        $this->nextKnot = $nextKnot;
     }
 
-    if ($rowTail === $rowHead + 2) {
-        $rowTail = $rowHead + 1;
-        $colTail = $colHead;
+    public function move(string $direction): void
+    {
+        switch ($direction) {
+            case 'U':
+                ++$this->row;
+                break;
+            case 'D':
+                --$this->row;
+                break;
+            case 'L':
+                --$this->col;
+                break;
+            case 'R':
+                ++$this->col;
+                break;
+        }
+
+        $this->nextKnot?->follow($this);
+    }
+
+    /**
+     * I've check the possible movements for the tail, based on its
+     * relative position to the head and identified a pattern:
+     * I don't have to check for all possible tail positions, only
+     * if there is a 2-distance in the col or row direction
+     * It is enough to deduce the new tail position
+     *
+     * For example, if the tail is 2 cols lower than the head, it
+     * will move to be just in top of the head, whichever row it
+     * was in before
+     *
+     * T..    ...
+     * ... -> .T.
+     * .H.    .H.
+     *
+     * .T.    ...
+     * ... -> .T.
+     * .H.    .H.
+     *
+     * ..T    ...
+     * ... -> .T.
+     * .H.    .H.
+     *
+     * Head = $knot
+     * Tail = $this
+     */
+    public function follow(Knot $knot): void
+    {
+        if ($this->col === $knot->col - 2) {
+            $this->col = $knot->col - 1;
+            $this->row = $knot->row;
+        } else if ($this->col === $knot->col + 2) {
+            $this->col = $knot->col + 1;
+            $this->row = $knot->row;
+        } else if ($this->row === $knot->row - 2) {
+            $this->row = $knot->row - 1;
+            $this->col = $knot->col;
+        } else if ($this->row === $knot->row + 2) {
+            $this->row = $knot->row + 1;
+            $this->col = $knot->col;
+        }
+
+        $this->nextKnot?->follow($this);
     }
 }
 
@@ -90,32 +102,21 @@ function countArray(array $array): int
     return $count;
 }
 
-function display(array $array): void
-{
-    foreach ($array as $row => $line) {
-        foreach ($line as $col => $item) {
-            echo "$row, $col\n";
-        }
-    }
-}
+$head = new Knot();
+$tail = new Knot();
+$head->setNextKnot($tail);
 
-$rowHead = 0;
-$colHead = 0;
-$rowTail = 0;
-$colTail = 0;
-
-$positionsVisited = [];
+$positionsVisitedPart1 = [];
 
 while (false !== $instruction = fgets($instructionList)) {
     [$direction, $numberOfSteps] = explode(' ', $instruction);
 
     for ($i = 0; $i < $numberOfSteps; ++$i) {
-        moveHead($rowHead, $colHead, $direction);
-        moveTail($rowHead, $colHead, $rowTail, $colTail);
+        $head->move($direction);
 
-        $positionsVisited[$rowTail][$colTail] = true;
+        $positionsVisitedPart1[$tail->getRow()][$tail->getCol()] = true;
     }
 }
 
-echo 'The answer for part 1 is '.countArray($positionsVisited)."\n";
+echo 'The answer for part 1 is '.countArray($positionsVisitedPart1)."\n";
 
