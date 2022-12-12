@@ -88,6 +88,12 @@ class Node
             }
         }
     }
+
+    public function reset(): void
+    {
+        $this->visited = false;
+        $this->distance = null;
+    }
 }
 
 class NodeList
@@ -159,6 +165,7 @@ class NodeList
 
     public function findShortestPath(): ?int
     {
+        $this->resetNodes();
         $this->nodesToVisit = [$this->startNode];
 
         while (!empty($this->nodesToVisit)) {
@@ -212,6 +219,44 @@ class NodeList
             $this->nodesToVisit[] = $node;
         }
     }
+
+    public function getOptimalPath(): ?int
+    {
+        $shortestPath = null;
+
+        /** @var Node $node */
+        foreach ($this->nodeList as $line) {
+            foreach ($line as $node) {
+                if (0 !== $node->getAltitude()) {
+                    continue;
+                }
+
+                $this->startNode = $node;
+                $pathLength = $this->findShortestPath();
+
+                if (
+                    null === $shortestPath
+                    || (
+                        null !== $pathLength
+                        && $pathLength < $shortestPath
+                    )
+                ) {
+                    $shortestPath = $pathLength;
+                }
+            }
+        }
+
+        return $shortestPath;
+    }
+
+    private function resetNodes(): void
+    {
+        foreach ($this->nodeList as $line) {
+            foreach ($line as $node) {
+                $node->reset();
+            }
+        }
+    }
 }
 
 
@@ -220,3 +265,13 @@ $nodeList = new NodeList($map);
 
 $answerPart1 = $nodeList->findShortestPath();
 echo "The answer for part 1 is $answerPart1\n";
+
+/**
+ * Note : it worked because my computer is powerful enough
+ * but using Dijkstra for each combination is not efficient
+ * it would be better to compute distances for all nodes by
+ * taking E as start node, then parse the nodes to search for
+ * the shortest path in 0-altitude nodes
+ */
+$answerPart2 = $nodeList->getOptimalPath();
+echo "The answer for part 2 is $answerPart2\n";
