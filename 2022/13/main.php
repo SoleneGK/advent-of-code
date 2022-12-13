@@ -82,3 +82,40 @@ $answerPartOne = array_sum($pairsInRightOrder);
 
 echo "The answer for part 1 is $answerPartOne\n";
 
+
+$rawPacketList = array_filter($input, static fn($value) => '' !== $value);
+
+$firstDividerPacket = [[2]];
+$lastDividerPacket = [[6]];
+
+$packetList = [
+    0 => $firstDividerPacket,
+    1 => $lastDividerPacket,
+];
+
+foreach ($rawPacketList as $packet) {
+    eval("\$packetList[] = $packet;");
+}
+
+usort($packetList, static fn(array $a, array $b) => isInRightOrder($a, $b) ? -1 : 1);
+
+$firstDividerIndex = 0;
+$lastDividerIndex = 0;
+
+foreach ($packetList as $key => $packet) {
+    if ($packet === $firstDividerPacket) {
+        $firstDividerIndex = $key + 1;
+
+        continue;
+    }
+
+    if ($packet === $lastDividerPacket) {
+        $lastDividerIndex = $key + 1;
+
+        break;
+    }
+}
+
+$decoderKey = $firstDividerIndex * $lastDividerIndex;
+
+echo "The answer for part 2 is $decoderKey\n";
