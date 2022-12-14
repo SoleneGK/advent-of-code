@@ -48,14 +48,26 @@ $sandStartRow = 0;
 $sandCol = $sandStartCol;
 $sandRow = $sandStartRow;
 
-while ($sandRow < $maxRockRow) {
+$answerPart1 = null;
+
+while (true) {
     ++$numberOfUnitOfSand;
 
     $sandCol = $sandStartCol;
     $sandRow = $sandStartRow;
-    $canMove = true;
 
-    while ($canMove && $sandRow < $maxRockRow) {
+    while (true) {
+        // Keep getting part 1 answer - not working
+        if ($sandRow === $maxRockRow) {
+            $answerPart1 = $numberOfUnitOfSand - 1;
+        }
+
+        if ($maxRockRow + 1 === $sandRow) {
+            $caveMap[$sandRow][$sandCol] = 'sand';
+
+            break;
+        }
+
         if (!isset($caveMap[$sandRow+1][$sandCol])) {
             ++$sandRow;
 
@@ -77,7 +89,12 @@ while ($sandRow < $maxRockRow) {
         }
 
         $caveMap[$sandRow][$sandCol] = 'sand';
-        $canMove = false;
+
+        break;
+    }
+
+    if ($sandCol === $sandStartCol && $sandRow === $sandStartRow) {
+        break;
     }
 }
 
@@ -133,5 +150,7 @@ function display(array $caveMap): void
     }
 }
 
-$answerPart1 = $numberOfUnitOfSand - 1;
+$answerPart2 = $numberOfUnitOfSand;
+
 echo "The answer for part 1 is $answerPart1\n";
+echo "The answer for part 2 is $answerPart2\n";
