@@ -51,8 +51,27 @@ class Game
         return $this->rounds;
     }
 
-    public function dumpRounds(): void
+    public function getMinimalSetPower(): int
     {
-        var_dump($this->rounds);
+        $minimalSet = $this->getMinimalSet();
+
+        return $minimalSet['red'] * $minimalSet['green'] * $minimalSet['blue'];
+    }
+
+    public function getMinimalSet(): array
+    {
+        $minimalSet = [
+            'red' => 0,
+            'green' => 0,
+            'blue' => 0,
+        ];
+
+        foreach ($this->rounds as $round) {
+            $minimalSet['red'] = max($minimalSet['red'], $round['red']);
+            $minimalSet['green'] = max($minimalSet['green'], $round['green']);
+            $minimalSet['blue'] = max($minimalSet['blue'], $round['blue']);
+        }
+
+        return $minimalSet;
     }
 }
