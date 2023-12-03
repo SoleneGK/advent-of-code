@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 require_once 'Number.php';
+require_once 'Gear.php';
 
 $file = fopen('input.txt', 'rb');
 
@@ -59,5 +60,37 @@ foreach ($numberList as $number) {
 }
 
 echo "The sum of part numbers is $sumOfPartNumbers\n";
+
+$datagrid = [];
+$gearList = [];
+$yMax = count($grid[0]);
+
+for ($x = 0, $xMax = count($grid); $x < $xMax; $x++) {
+    for ($y = 0; $y < $yMax; $y++) {
+        $datagrid[$x][$y] = null;
+
+        if ('*' === $grid[$x][$y]) {
+            $gearList[] = new Gear($x, $y);
+        }
+    }
+}
+
+foreach ($numberList as $number) {
+    for ($y = $number->minY; $y <= $number->maxY; $y++) {
+        $datagrid[$number->x][$y] = $number;
+    }
+}
+
+$sumOfGearRatio = 0;
+
+foreach ($gearList as $gear) {
+    $gear->getAdjacentNumbers($datagrid);
+
+    if ($gear->isValidGear($datagrid)) {
+        $sumOfGearRatio += $gear->getGearRatio();
+    }
+}
+
+echo "The sum of gear ratios is $sumOfGearRatio\n";
 
 fclose($file);

@@ -56,4 +56,9 @@ readonly class Number
 
         return $neighbors;
     }
+
+    public function __toString(): string
+    {
+        return $this->value . ';' . $this->x . ';' . $this->minY. ';' . $this->maxY;
+    }
 }
