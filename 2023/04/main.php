@@ -9,7 +9,8 @@ $file = fopen('input.txt', 'rb');
 $cardList = [];
 
 while (false !== $line = fgets($file)) {
-    $cardList[] = new Card(trim($line));
+    $card = new Card(trim($line));
+    $cardList[$card->number] = $card;
 }
 
 fclose($file);
@@ -17,8 +18,27 @@ fclose($file);
 $score = 0;
 
 foreach ($cardList as $card) {
-    echo "The score of the card is $card->score\n";
     $score += $card->score;
 }
 
 echo "The score is $score\n";
+
+
+
+$cardNumber = [];
+
+foreach ($cardList as $number =>$card) {
+    $cardNumber[$number] = 1;
+}
+
+foreach ($cardList as $number => $card) {
+    if ($card->numberOfMatches > 0) {
+        for ($i = 1; $i <= $card->numberOfMatches; $i++) {
+            $cardNumber[$number + $i] += $cardNumber[$number];
+        }
+    }
+}
+
+$numberOfCards = array_sum($cardNumber);
+
+echo "The number of cards is $numberOfCards\n";

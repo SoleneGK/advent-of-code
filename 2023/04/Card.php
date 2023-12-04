@@ -4,20 +4,22 @@ declare(strict_types=1);
 
 class Card
 {
+    public readonly int $number;
     public array $winningNumbers;
     public readonly array $numbersYouHave;
     public readonly int $score;
+    public readonly int $numberOfMatches;
 
     public function __construct(string $line)
     {
-        $this->initNumbers($line);
+        $this->initData($line);
         $this->calculateScore();
     }
 
-    private function initNumbers(string $line): void
+    private function initData(string $line): void
     {
-        [$temp, $numberList] = explode(':', $line);
-        unset($temp);
+        [$number, $numberList] = explode(':', $line);
+        $this->initNumber($number);
 
         [$winningNumbers, $numbersYouHave] = explode('|', trim($numberList));
 
@@ -25,6 +27,14 @@ class Card
         $this->numbersYouHave = array_map('intval', explode(' ', $numbersYouHave));
 
         $this->initWinningNumbers($winningNumbers);
+    }
+
+    private function initNumber(string $number): void
+    {
+        $number = str_replace(['   ', '  '], ' ', $number);
+        [$card, $number] = explode(' ', $number);
+        unset($card);
+        $this->number = (int) $number;
     }
 
     private function initWinningNumbers(string $rawWinningNumbers): void
@@ -48,6 +58,7 @@ class Card
             }
         }
 
+        $this->numberOfMatches = $numberOfMatches;
         $this->score = 0 === $numberOfMatches ? 0 : 2 ** ($numberOfMatches - 1);
     }
 }
