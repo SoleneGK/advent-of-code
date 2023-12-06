@@ -60,3 +60,22 @@ foreach ($timeList as $key => $time) {
 }
 
 echo "The solutions for part 1 is $part1Solution\n";
+
+
+function get_time_part2(string $line): int
+{
+    $times = trim(explode(':', $line)[1]);
+    return (int) preg_replace('!\s+!', '', $times);
+}
+
+function get_distance_part2(string $line): int
+{
+    $distances = trim(explode(':', $line)[1]);
+    return (int) preg_replace('!\s+!', '', $distances);
+}
+
+
+$timePart2 = get_time_part2($timeLine);
+$distancePart2 = get_distance_part2($distanceLine);
+
+echo 'The solution for part 2 is ' . get_number_of_ways_to_win($timePart2, $distancePart2) . PHP_EOL;
