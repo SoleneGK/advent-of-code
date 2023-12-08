@@ -25,35 +25,23 @@ echo "The number of steps is $numberOfSteps\n";
 
 function get_number_of_steps(array $nodeList, array $instructionList): int
 {
+    // What makes it a particular case: Z nodes are only found at end of a cycle
     $startNodeList = get_start_node_list($nodeList);
-    $pathData = get_path_data_list($nodeList, $instructionList);
+    $pathData = get_destination_node_list($nodeList, $instructionList);
+    $nodesInALoop = get_nodes_in_a_loop($pathData);
 
-    $endFound = false;
-    $numberOfSteps = 0;
-    $numberOfInstructions = count($instructionList);
+    $loopData = get_loop_data($startNodeList, $pathData, $nodesInALoop);
+    // New particularity: for all starting nodes, only 1 step is needed to get into a loop
+    // New particularity : Z node is always at position loopLength - 1, so first passage at a Z point is same as loop length
+    // New particularity: loop length is always a primary number
 
-    while (!$endFound) {
-        // est-ce qu'on a une position commune à tous les paths ?
-        $zPosition = search_common_z_position($pathData, $startNodeList);
+    $numberOfSteps = 1;
 
-        // non : ajouter le nombre d'instructions au nombre de steps et prendre les nodes d'arrivée en nouveaux nodes de départ
-        if (false === $zPosition) {
-            $numberOfSteps += $numberOfInstructions;
-            $startNodeList = get_end_node_list($pathData, $startNodeList);
-
-            echo "$numberOfSteps\n";
-            continue;
-        }
-
-        // oui : ajouter la position au nombre de steps et mettre endFound à true
-        $numberOfSteps += $zPosition;
-        $endFound = true;
-
-        echo "$numberOfSteps\n";
+    foreach ($loopData as $loop) {
+        $numberOfSteps *= $loop['loopLength'];
     }
 
-
-    return $numberOfSteps;
+    return $numberOfSteps * count($instructionList);
 }
 
 function get_start_node_list(array $nodeList): array
@@ -61,30 +49,21 @@ function get_start_node_list(array $nodeList): array
     return array_filter($nodeList, static fn(Node $node) => str_ends_with($node->name, 'A'));
 }
 
-function get_path_data_list(array $nodeList, array $instructionList): array
+function get_destination_node_list(array $nodeList, array $instructionList): array
 {
-    $pathDataList = [];
+    $destinationNodeList = [];
 
     foreach ($nodeList as $nodeName => $node) {
-        $pathData = [
-            'zPositionList' => [],
-        ];
-
         $currentNode = $node;
 
-        foreach ($instructionList as $index => $instruction) {
+        foreach ($instructionList as $instruction) {
             $currentNode = get_next_node($nodeList, $currentNode, $instruction);
-
-            if ($currentNode->endWithZ) {
-                $pathData['zPositionList'][] = $index + 1;
-            }
         }
 
-        $pathData['endNode'] = $currentNode;
-        $pathDataList[$nodeName] = $pathData;
+        $destinationNodeList[$nodeName] = $currentNode->name;
     }
 
-    return $pathDataList;
+    return $destinationNodeList;
 }
 
 function get_next_node(array $nodeList, Node $currentNode, string $instruction): Node
@@ -96,30 +75,54 @@ function get_next_node(array $nodeList, Node $currentNode, string $instruction):
     return $nodeList[$currentNode->right];
 }
 
-function search_common_z_position(array $pathData, array $startNodeList): int|false
+function get_nodes_in_a_loop(array $pathData): array
 {
-    $zPositionList = [];
+    $nodesInALoop = [];
 
-    foreach ($startNodeList as $node) {
-        $zPositionList[] = $pathData[$node->name]['zPositionList'];
+    foreach ($pathData as $destinationNodeName) {
+        if (!isset($nodesInALoop[$destinationNodeName])) {
+            $nodesInALoop[$destinationNodeName] = 1;
+            continue;
+        }
+
+        ++$nodesInALoop[$destinationNodeName];
     }
 
-    $commonZPosition = array_intersect(...$zPositionList);
-
-    if ([] === $commonZPosition) {
-        return false;
-    }
-
-    return current($commonZPosition);
+    return array_keys($nodesInALoop);
 }
 
-function get_end_node_list(array $pathData, array $startNodeList): array
+function get_loop_data(array $startNodeList, array $pathData, array $nodesInALoop): array
 {
-    $endNodeList = [];
+    $loopList = [];
 
-    foreach ($startNodeList as $node) {
-        $endNodeList[] = $pathData[$node->name]['endNode'];
+    foreach ($startNodeList as $startNode) {
+        $loopData = [
+            'startLength' => 0,
+            'loopLength'  => 0,
+        ];
+
+        $currentNodeName = $startNode->name;
+
+        // find how many cycles before going into a loop
+        while (!in_array($currentNodeName, $nodesInALoop, true)) {
+            ++$loopData['startLength'];
+            $currentNodeName = $pathData[$currentNodeName];
+        }
+
+        // find how many cycles is the loop long
+        $startLoopNodeName = $currentNodeName;
+
+        do {
+            if (str_ends_with($currentNodeName, 'Z')) {
+                $loopData['zPositionInLoop'] = $loopData['loopLength'];
+            }
+
+            ++$loopData['loopLength'];
+            $currentNodeName = $pathData[$currentNodeName];
+        } while ($currentNodeName !== $startLoopNodeName);
+
+        $loopList[$startNode->name] = $loopData;
     }
 
-    return $endNodeList;
+    return $loopList;
 }
