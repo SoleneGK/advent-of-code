@@ -13,25 +13,42 @@ while ($line = fgets($file)) {
 fclose($file);
 
 $valueList = extrapolate_value_list($valueHistoryList);
-echo "The sum of extrapolated values is ". array_sum($valueList). "\n";
+
+$sumExtrapolatedValues = array_reduce(
+    $valueList,
+    static fn(int $carry, array $data) => $carry + $data['next_value'],
+    0)
+;
+$sumExtrapolatedBackwardsValues = array_reduce(
+    $valueList,
+    static fn(int $carry, array $data) => $carry + $data['previous_value'],
+    0)
+;
+
+echo "The sum of extrapolated values is $sumExtrapolatedValues\n";
+echo "The sum of extrapolated backwards values is $sumExtrapolatedBackwardsValues\n";
 
 function extrapolate_value_list(array $valueHistoryList): array
 {
     $extrapolatedValueList = [];
 
     foreach ($valueHistoryList as $valueHistory) {
-        $extrapolatedValueList[] = extrapolate_value($valueHistory);
+        $extrapolatedValueList[] = extrapolate_values($valueHistory);
     }
 
     return $extrapolatedValueList;
 }
 
-function extrapolate_value(array $valueHistory): int
+function extrapolate_values(array $valueHistory): array
 {
     $sequenceList = get_sequence($valueHistory);
     extrapolate($sequenceList);
+    extrapolate_backwards($sequenceList);
 
-    return $sequenceList[0][count($sequenceList[0]) - 1];
+    return [
+        'next_value'     => $sequenceList[0][count($sequenceList[0]) - 2],
+        'previous_value' => $sequenceList[0][-1],
+    ];
 }
 
 function get_sequence(array $valueHistory): array
@@ -62,5 +79,15 @@ function extrapolate(array &$sequenceList): void
     for ($lineNumber = count($sequenceList) - 2; $lineNumber >= 0; $lineNumber--) {
         $sequenceList[$lineNumber][] = $sequenceList[$lineNumber][count($sequenceList[$lineNumber]) - 1]
             + $sequenceList[$lineNumber + 1][count($sequenceList[$lineNumber + 1]) - 1];
+    }
+}
+
+function extrapolate_backwards(array &$sequenceList): void
+{
+    $lineNumber = count($sequenceList) - 1;
+    $sequenceList[$lineNumber][-1] = 0;
+
+    for ($lineNumber = count($sequenceList) - 2; $lineNumber >= 0; $lineNumber--) {
+        $sequenceList[$lineNumber][-1] = $sequenceList[$lineNumber][0] - $sequenceList[$lineNumber + 1][-1];
     }
 }
