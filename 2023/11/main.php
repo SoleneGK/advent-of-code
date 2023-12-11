@@ -7,10 +7,18 @@ require_once 'Galaxy.php';
 $image = get_image();
 $emptyRows = get_empty_rows($image);
 $emptyCols = get_empty_cols($image);
-$galaxyList = get_galaxy_list($image, $emptyRows, $emptyCols);
+
+// Part 1
+$galaxyList = get_galaxy_list($image, $emptyRows, $emptyCols, 2);
 $sumOfDistances = get_sum_of_distances($galaxyList);
 
-echo "The sum of the distances is: $sumOfDistances\n";
+echo "The sum of the distances with expansion factor 1 is $sumOfDistances\n";
+
+// Part 2
+$galaxyList = get_galaxy_list($image, $emptyRows, $emptyCols, 1000000);
+$sumOfDistances = get_sum_of_distances($galaxyList);
+
+echo "The sum of the distances with expansion factor 1000000 is $sumOfDistances\n";
 
 function get_image(): array
 {
@@ -61,7 +69,7 @@ function get_empty_cols($image): array
     return $emptyCols;
 }
 
-function get_galaxy_list(array $image, array $emptyRows, array $emptyCols): array
+function get_galaxy_list(array $image, array $emptyRows, array $emptyCols, int $expansionFactor): array
 {
     $galaxyList = [];
 
@@ -79,7 +87,10 @@ function get_galaxy_list(array $image, array $emptyRows, array $emptyCols): arra
                 return $colIndex < $y;
             }));
 
-            $galaxyList[] = new Galaxy($x + $rowShift, $y + $colShift);
+            $galaxyList[] = new Galaxy(
+                $x + $rowShift * ($expansionFactor - 1),
+                $y + $colShift * ($expansionFactor - 1)
+            );
         }
     }
 
