@@ -22,4 +22,15 @@ foreach ($reportList as $report) {
     }
 }
 
-echo 'There are ' . $numberOfSafeReports . ' safe reports';
+echo 'There are ' . $numberOfSafeReports . " safe reports\n";
+
+$numberOfSafeReportsWithProblemDampener = 0;
+
+/** @var Report $report */
+foreach ($reportList as $report) {
+    if ($report->isSafeWithProblemDampener()) {
+        $numberOfSafeReportsWithProblemDampener++;
+    }
+}
+
+echo 'There are ' . $numberOfSafeReportsWithProblemDampener . " safe reports with the problem dampener\n";

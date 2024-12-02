@@ -2,33 +2,45 @@
 
 declare(strict_types=1);
 
-class Report
+readonly class Report
 {
-    protected array $intervals;
-
-    public function __construct(protected readonly array $levels)
+    public function __construct(protected array $levels)
     {
-        $length = count($levels);
-
-        for ($i = 0; $i < $length - 1; $i++) {
-            $this->intervals[] = $levels[$i] - $levels[$i + 1];
-        }
     }
 
     public function isSafe(): bool
     {
-        if (!$this->isAllIncreasingOrDecreasing()) {
+        return self::areSafeLevels($this->levels);
+    }
+
+    public static function areSafeLevels(array $levels): bool
+    {
+        $intervals = self::computeIntervals($levels);
+
+        if (!self::isAllIncreasingOrDecreasing($intervals)) {
             return false;
         }
 
-        return $this->areIntervalsSafe();
+        return self::areIntervalsSafe($intervals);
     }
 
-    protected function isAllIncreasingOrDecreasing(): bool
+    protected static function computeIntervals(array $levels): array
+    {
+        $intervals = [];
+        $length = count($levels);
+
+        for ($i = 0; $i < $length - 1; $i++) {
+            $intervals[] = $levels[$i] - $levels[$i + 1];
+        }
+
+        return $intervals;
+    }
+
+    protected static function isAllIncreasingOrDecreasing(array $intervals): bool
     {
         $variationType = null;
 
-        foreach ($this->intervals as $interval) {
+        foreach ($intervals as $interval) {
             if (0 === $interval) {
                 return false;
             }
@@ -47,14 +59,36 @@ class Report
         return true;
     }
 
-    protected function areIntervalsSafe(): bool
+    protected static function areIntervalsSafe(array $intervals): bool
     {
-        foreach ($this->intervals as $interval) {
+        foreach ($intervals as $interval) {
             if (abs($interval) < 1 || abs($interval) > 3) {
                 return false;
             }
         }
 
         return true;
+    }
+
+    public function isSafeWithProblemDampener(): bool
+    {
+        if ($this->isSafe()) {
+            return true;
+        }
+
+        foreach ($this->levels as $key => $level) {
+            // calcule la liste sans la valeur
+            $reducedLevels = $this->levels;
+            unset($reducedLevels[$key]);
+            $reducedLevels = array_values($reducedLevels);
+
+            // calcule si safe
+            if (self::areSafeLevels($reducedLevels))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
