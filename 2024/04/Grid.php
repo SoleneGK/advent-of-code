@@ -102,4 +102,50 @@ class Grid
 
         return $word;
     }
+    public function getNumberOfXOfMas(): int
+    {
+        $this->computeGridDimensions();
+
+        $numberOfApparitions = 0;
+
+        for ($x = 0; $x < $this->xMax; $x++) {
+            for ($y = 0; $y < $this->yMax; $y++) {
+                if ('A' !== $this->grid[$x][$y]) {
+                    continue;
+                }
+
+                if ($this->isXOfMas($x, $y)) {
+                    $numberOfApparitions++;
+                }
+            }
+        }
+
+        return $numberOfApparitions;
+    }
+
+    protected function isXOfMas(int $x, int $y): bool
+    {
+        if ($x <= 0 || $x >= $this->xMax -1 || $y <= 0 || $y >= $this->yMax - 1) {
+            return false;
+        }
+
+        $cornerTL = $this->grid[$x-1][$y-1];
+        $cornerTR = $this->grid[$x-1][$y+1];
+        $cornerBL = $this->grid[$x+1][$y-1];
+        $cornerBR = $this->grid[$x+1][$y+1];
+
+        $target = ['M', 'S'];
+
+        $firstDiagonal = [$cornerTL, $cornerBR];
+        sort($firstDiagonal);
+
+        if ($target !== $firstDiagonal) {
+            return false;
+        }
+
+        $secondDiagonal = [$cornerTR, $cornerBL];
+        sort($secondDiagonal);
+
+        return $target === $secondDiagonal;
+    }
 }

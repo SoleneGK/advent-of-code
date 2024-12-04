@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 require_once 'Grid.php';
 
-$file = fopen('example.txt', 'rb');
+$file = fopen('input.txt', 'rb');
 
 $grid = new Grid();
 
@@ -13,3 +13,5 @@ while (false !== $line = fgets($file)) {
 }
 
 echo "XMAS appears {$grid->getNumberOfXmas()} times\n";
+
+echo "X-MAS appears {$grid->getNumberOfXOfMas()} times\n";
