@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-readonly class Update
+class Update
 {
     protected array $pageList;
 
@@ -41,5 +41,10 @@ readonly class Update
         $index = (count($this->pageList) - 1) / 2;
 
         return $this->pageList[$index];
+    }
+
+    public function sort(array $sortRules): void
+    {
+        usort($this->pageList, static fn ($a, $b) => $sortRules[$a][$b]);
     }
 }
