@@ -32,7 +32,10 @@ while (false !== $line = fgets($file)) {
     $xMax++;
 }
 
-$mappedPositions = [$guardPosition];
+$mappedPositions = [];
+add_position($mappedPositions, $guardPosition, $vector);
+
+$numberOfPossibleObstructions = 0;
 
 while (true) {
     move($guardPosition, $obstacleList, $vector);
@@ -43,7 +46,30 @@ while (true) {
     }
 
     // add current position to mapped positions
-    add_position($guardPosition, $mappedPositions);
+    add_position($mappedPositions, $guardPosition, $vector);
+}
+
+echo 'There are ' . count_mapped_positions($mappedPositions) . " mapped positions\n";
+
+
+function add_position(array &$mappedPositions, array $guardPosition, array $vector): void
+{
+    $x = $guardPosition['x'];
+    $y = $guardPosition['y'];
+
+    // is this position has not already been mapped, it's added with current vector
+    if (!isset($mappedPositions[$x][$y])) {
+        $mappedPositions[$x][$y] = [$vector];
+
+        return;
+    }
+
+    // else, if current vector has not been register for this position, it's added
+    if (\in_array($vector, $mappedPositions[$x][$y], true)) {
+        return;
+    }
+
+    $mappedPositions[$x][$y][] = $vector;
 }
 
 function move(array &$guardPosition, array $obstacleList, array &$vector): void
@@ -59,7 +85,7 @@ function move(array &$guardPosition, array $obstacleList, array &$vector): void
 
     // yes: change direction
     if ($isBlocked) {
-        turn_right($vector);
+        $vector = turn_right($vector);
 
         return;
     }
@@ -68,31 +94,21 @@ function move(array &$guardPosition, array $obstacleList, array &$vector): void
     $guardPosition = $nextPosition;
 }
 
-function turn_right(array &$vector): void
+function turn_right(array $vector): array
 {
     if (-1 === $vector['x']) {
-        $vector['x'] = 0;
-        $vector['y'] = 1;
-
-        return;
+        return ['x' => 0, 'y' => 1];
     }
 
     if (1 === $vector['y']) {
-        $vector['x'] = 1;
-        $vector['y'] = 0;
-
-        return;
+        return ['x' => 1, 'y' => 0];
     }
 
     if (1 === $vector['x']) {
-        $vector['x'] = 0;
-        $vector['y'] = -1;
-
-        return;
+        return ['x' => 0, 'y' => -1];
     }
 
-    $vector['x'] = -1;
-    $vector['y'] = 0;
+    return ['x' => -1, 'y' => 0];
 }
 
 function is_out_of_map(array $guardPosition, int $xMax, int $yMax): bool
@@ -116,16 +132,18 @@ function is_out_of_map(array $guardPosition, int $xMax, int $yMax): bool
     return false;
 }
 
-function add_position(array $guardPosition, array &$mappedPositions): void
+function count_mapped_positions(array $mappedPositions): int
 {
-    if (\in_array($guardPosition, $mappedPositions, true)) {
-        return;
+    $count = 0;
+
+    foreach ($mappedPositions as $rowData) {
+        foreach ($rowData as $y) {
+            $count++;
+        }
     }
 
-    $mappedPositions[] = $guardPosition;
+    return $count;
 }
-
-echo 'There are ' . count($mappedPositions) . " mapped positions\n";
 
 function display(int $xMax, int $yMax, array $obstaclePositions, array $mappedPositions): void
 {
@@ -139,7 +157,7 @@ function display(int $xMax, int $yMax, array $obstaclePositions, array $mappedPo
                 continue;
             }
 
-            if (\in_array($coordinates, $mappedPositions, true)) {
+            if (isset($mappedPositions[$x][$y])) {
                 echo 'X';
 
                 continue;
