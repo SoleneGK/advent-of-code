@@ -41,4 +41,44 @@ class Range
 
         return $firstPart !== $secondPart;
     }
+
+    public function getSumOfInvalidIdsForPart2(): int
+    {
+        $sum = 0;
+
+        for ($id = $this->firstId; $id <= $this->lastId; ++$id) {
+            if (!self::isValidForPart2($id)) {
+                $sum += $id;
+            }
+        }
+
+        return $sum;
+    }
+
+    private static function isValidForPart2(int $id): bool
+    {
+        $stringId = (string) $id;
+        $length = \strlen($stringId);
+
+        for ($i = 1; $i <= floor($length / 2); ++$i) {
+            // si on ne peut pas écrire i fois un pattern
+            if ($length % $i !== 0) {
+                continue;
+            }
+
+            $numberOfRepetitions = $length / $i;
+            $pattern = substr($stringId, 0, $i);
+            $potentialPattern = '';
+
+            for ($j = 1; $j <= $numberOfRepetitions; ++$j) {
+                $potentialPattern .= $pattern;
+            }
+
+            if ($potentialPattern === $stringId) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }
